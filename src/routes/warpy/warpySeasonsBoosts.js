@@ -1,4 +1,4 @@
-const { getWarpySeasonBoosts } = require('../../db/nodeDb');
+const { getWarpySeasonsBoosts } = require('../../db/nodeDb');
 const { config } = require('../../config');
 
 module.exports = {
