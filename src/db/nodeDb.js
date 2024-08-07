@@ -496,8 +496,7 @@ module.exports = {
   },
 
   getWarpyUserIdsFixed: async (addresses) => {
-
-    const lowercasedAddresses = addresses.map(a => a ? a.toLowerCase() : a);
+    const lowercasedAddresses = addresses.map((a) => (a ? a.toLowerCase() : a));
 
     const result = await drePool.query(
       `
@@ -587,7 +586,7 @@ module.exports = {
           SELECT * FROM seasons 
           WHERE value -> 'from' < value -> 'to'  and (value ->> 'to')::int >= $1 and (value ->> 'from')::int <= $1
         )
-        SELECT boosts, jsonb_object_agg(key, value) FROM boosts, limited_seasons GROUP BY boosts.boosts;`,
+        SELECT boosts, jsonb_object_agg(key, value) AS seasons FROM boosts, limited_seasons GROUP BY boosts.boosts;`,
       [timestamp]
     );
 
