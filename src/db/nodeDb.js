@@ -569,5 +569,28 @@ module.exports = {
     );
 
     return result.rows;
+  },
+
+  getWarpySeasonsBoosts: async (timestamp) => {
+    const result = await drePool.query(
+      `
+        WITH max_state AS (
+          SELECT value FROM warp.sort_key_cache ORDER BY sort_key DESC LIMIT 1),
+        boosts AS (
+          SELECT value -> 'boosts' AS boosts FROM max_state
+        ),
+        seasons AS (
+          SELECT seasons.value AS value, seasons.key
+          FROM max_state, jsonb_each(value -> 'seasons') AS seasons
+        ),
+        limited_seasons AS (
+          SELECT * FROM seasons 
+          WHERE value -> 'from' < value -> 'to'  and (value ->> 'to')::int >= $1 and (value ->> 'from')::int <= $1
+        )
+        SELECT boosts, jsonb_object_agg(key, value) FROM boosts, limited_seasons GROUP BY boosts.boosts;`,
+      [timestamp]
+    );
+
+    return result.rows;
   }
 };
