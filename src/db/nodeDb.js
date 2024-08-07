@@ -410,7 +410,7 @@ module.exports = {
       r.wallet_address, 
       r.balance
       FROM ranked r
-      WHERE wallet_address = '${address}')
+      WHERE wallet_address ILIKE '${address}')
       UNION ALL`
           : ''
       }
@@ -533,11 +533,11 @@ module.exports = {
         ${
           address
             ? `(SELECT r.rn, 
-          (SELECT key from last_users where value = '${address}') as user_id, 
+          (SELECT key from last_users where value ILIKE '${address}') as user_id, 
           r.wallet_address, 
           r.balance
         FROM ranked r
-        WHERE wallet_address = '${address}')
+        WHERE wallet_address ILIKE '${address}')
         UNION ALL`
             : ''
         }
