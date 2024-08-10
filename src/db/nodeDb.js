@@ -1,7 +1,7 @@
 const { signState } = require('../signature');
 const { config } = require('../config');
 const dreDbConfig = require('../../postgresConfigDreDb.js');
-const dreReplicaDbConfig = require('../../postgresConfigDreReplica.js');
+const dreReplicaDbConfig = require('../../postgresConfigDreDbReplica.js');
 const { Pool } = require('pg');
 
 const drePool = new Pool(dreDbConfig);
@@ -351,7 +351,7 @@ module.exports = {
   },
 
   getUserLastRewards: async (contractId, userId, limit) => {
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `
         SELECT sort_key, block_timestamp, tx_id, data ->> 'points' AS points
         FROM dre.contract_event
@@ -372,7 +372,7 @@ module.exports = {
   },
 
   getWarpySeasonRanking: async (limit, address, contractId, from) => {
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `
       WITH users_points AS (
         SELECT users ->> 'userId' AS user_id, 
@@ -430,7 +430,7 @@ module.exports = {
   },
 
   getWarpyUserBalance: async (userId) => {
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `
         WITH max_state AS (
           SELECT value FROM warp.sort_key_cache ORDER BY sort_key DESC LIMIT 1
@@ -449,7 +449,7 @@ module.exports = {
   },
 
   getWarpyUserCounter: async (userId) => {
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `
         WITH max_state AS (
         SELECT value FROM warp.sort_key_cache ORDER BY sort_key DESC LIMIT 1
@@ -464,7 +464,7 @@ module.exports = {
   },
 
   getWarpyUserId: async (address) => {
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `
         WITH w1 AS (
           SELECT value -> 'users' AS users
@@ -481,7 +481,7 @@ module.exports = {
   },
 
   getWarpyUserIds: async (addresses) => {
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `
           WITH users as (
               SELECT users.key as dicord_id, users.value ->> 0 as address
@@ -501,7 +501,7 @@ module.exports = {
   getWarpyUserIdsFixed: async (addresses) => {
     const lowercasedAddresses = addresses.map((a) => (a ? a.toLowerCase() : a));
 
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `
           WITH users as ( 
               SELECT users.key as dicord_id, lower(users.value ->> 0) as address
@@ -519,7 +519,7 @@ module.exports = {
   },
 
   getWarpyUserRanking: async (limit, address, contractId) => {
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `
         WITH ranked AS (
           SELECT row_number() OVER (ORDER BY balance::int DESC NULLS LAST ) AS rn, wallet_address, balance
@@ -556,7 +556,7 @@ module.exports = {
   },
 
   getWarpyLastUserAddress: async (id) => {
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `WITH last_state AS (
         SELECT value
         FROM warp.sort_key_cache

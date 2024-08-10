@@ -10,11 +10,11 @@ module.exports = {
   port: process.env.PG_PORT,
   ...(process.env.PG_SSL === 'true'
     ? {
-        ssl: {
+        ssl: {c
           rejectUnauthorized: false,
-          ca: readFileSync('certs/db/replica/ca.pem').toString(),
-          key: readFileSync('certs/db/replica/dre/key.pem').toString(),
-          cert: readFileSync('certs/db/replica/dre/cert.pem').toString()
+          ca: readFileSync('certs/replica/ca.pem').toString(),
+          key: readFileSync('certs/replica/dre/key.pem').toString(),
+          cert: readFileSync('certs/replica/dre/cert.pem').toString()
         }
       }
     : '')
