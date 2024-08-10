@@ -1,12 +1,15 @@
 const { signState } = require('../signature');
 const { config } = require('../config');
 const dreDbConfig = require('../../postgresConfigDreDb.js');
+const dreReplicaDbConfig = require('../../postgresConfigDreReplica.js');
 const { Pool } = require('pg');
 
 const drePool = new Pool(dreDbConfig);
+const dreReplicaPool = new Pool(dreReplicaDbConfig);
 
 module.exports = {
   drePool,
+  dreReplicaPool,
   createNodeDbTables: async () => {
     await drePool.query(
       `
@@ -571,7 +574,7 @@ module.exports = {
   },
 
   getWarpySeasonsBoosts: async (timestamp) => {
-    const result = await drePool.query(
+    const result = await dreReplicaPool.query(
       `
         WITH max_state AS (
           SELECT value FROM warp.sort_key_cache ORDER BY sort_key DESC LIMIT 1),

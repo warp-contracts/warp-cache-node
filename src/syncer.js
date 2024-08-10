@@ -6,7 +6,8 @@ const {
   createNodeDbTables,
   drePool,
   insertFailure,
-  doBlacklist
+  doBlacklist,
+  dreReplicaPool
 } = require('./db/nodeDb');
 
 const logger = require('./logger')('syncer');
@@ -14,7 +15,14 @@ const exitHook = require('async-exit-hook');
 const { warp, pgClient } = require('./warp');
 const pollGateway = require('./workers/pollGateway');
 const { createAggDbTables } = require('./db/aggDbSetup');
-const { queuesCleanUp, initQueue, postEvalQueue, registerQueue, maintenanceQueue, updateQueue } = require('./bullQueue');
+const {
+  queuesCleanUp,
+  initQueue,
+  postEvalQueue,
+  registerQueue,
+  maintenanceQueue,
+  updateQueue
+} = require('./bullQueue');
 
 const isTestInstance = config.env === 'test';
 const subscriptionMode = config.updateMode === 'subscription';
@@ -37,7 +45,7 @@ async function runSyncer() {
   if (!subscriptionMode) {
     const theVeryFirstTimestamp = config.firstInteractionTimestamp;
     if (!theVeryFirstTimestamp) {
-      logger.error("FIRST_INTERACTION_TIMESTAMP .env param not set");
+      logger.error('FIRST_INTERACTION_TIMESTAMP .env param not set');
       process.exit(0);
     }
     const lastSyncTimestamp = await getLastSyncTimestamp();
@@ -92,9 +100,7 @@ async function subscribeToGatewayNotifications() {
   subscriber.on('message', async (channel, message) => {
     try {
       const msgObj = JSON.parse(message);
-      if (
-        ((msgObj.interaction && subscriptionMode) || msgObj.initialState) && isWhitelistedSource(msgObj.srcTxId)
-      ) {
+      if (((msgObj.interaction && subscriptionMode) || msgObj.initialState) && isWhitelistedSource(msgObj.srcTxId)) {
         await onMessage(msgObj);
       }
     } catch (e) {
@@ -167,13 +173,10 @@ async function processGatewayMessage(msgObj) {
     );
     logger.info('Published to register queue', jobId);
   } else if (subscriptionMode && msgObj.interaction) {
-    await updateQueue.add(
-      'evaluateInteraction',
-      {
-        ...baseMessage,
-        interaction: msgObj.interaction
-      }
-    );
+    await updateQueue.add('evaluateInteraction', {
+      ...baseMessage,
+      interaction: msgObj.interaction
+    });
     logger.info('Published to update queue');
   }
 }
@@ -200,6 +203,7 @@ async function cleanup(callback) {
   await queuesCleanUp();
   await warp.close();
   await drePool.end();
+  await dreReplicaPool.end();
   logger.info('Clean up finished');
   callback();
 }

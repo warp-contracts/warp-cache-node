@@ -5,8 +5,8 @@ const compress = require('koa-compress');
 const zlib = require('zlib');
 const router = require('./router');
 const { logConfig, config } = require('./config');
-const { drePool } = require('./db/nodeDb');
-const accessLogMiddleware  = require('./routes/accessLogMiddleware');
+const { drePool, dreReplicaPool } = require('./db/nodeDb');
+const accessLogMiddleware = require('./routes/accessLogMiddleware');
 
 const logger = require('./logger')('listener');
 const exitHook = require('async-exit-hook');
@@ -66,6 +66,7 @@ async function cleanup(callback) {
   logger.info('Interrupted');
   await warp.close();
   await drePool.end();
+  await dreReplicaPool.end();
   logger.info('Clean up finished');
   callback();
 }
