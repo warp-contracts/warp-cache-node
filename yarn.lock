@@ -2695,7 +2695,7 @@ arweave@1.13.7:
     base64-js "^1.5.1"
     bignumber.js "^9.0.2"
 
-arweave@^1.10.13, arweave@^1.12.4, arweave@^1.13.7:
+arweave@1.14.4, arweave@^1.10.13, arweave@^1.12.4, arweave@^1.13.7:
   version "1.14.4"
   resolved "https://registry.npmjs.org/arweave/-/arweave-1.14.4.tgz"
   integrity sha512-tmqU9fug8XAmFETYwgUhLaD3WKav5DaM4p1vgJpEj/Px2ORPPMikwnSySlFymmL2qgRh2ZBcZsg11+RXPPGLsA==
@@ -7089,13 +7089,13 @@ warp-contracts-sqlite@1.0.2:
     better-sqlite3 "^8.3.0"
     safe-stable-stringify "^2.4.3"
 
-warp-contracts@1.4.36:
-  version "1.4.36"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.36.tgz#dfdb69a34e314b2be5cb2ea8e51078a064c2fcff"
-  integrity sha512-2UeRxkry/wm0jme4d4CXvxUef+G3o3Al6Q2Tj2PQ5cvvK5GOfRfFiooaQIik88E6ZQNC9NJlvFUYBMVS9837CA==
+warp-contracts@1.4.45-warpy.0:
+  version "1.4.45-warpy.0"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.45-warpy.0.tgz#5d477c9773c880e3b1e894a77b7d1ddd3eca21ae"
+  integrity sha512-h006lXH7/co2NLdJHq9aUYnSfvJLSMnulr+xqojHyv7n/j/H/aFymTWBN0uGmu9AeKRQvNXkyHBtm+CvEwxjxg==
   dependencies:
     archiver "^5.3.0"
-    arweave "1.13.7"
+    arweave "1.14.4"
     async-mutex "^0.4.0"
     bignumber.js "9.1.1"
     events "3.3.0"
