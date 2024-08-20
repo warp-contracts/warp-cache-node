@@ -2,10 +2,12 @@ const logger = require('./../logger')('aggUpdates');
 const { drePool } = require('./nodeDb');
 
 const TAGS_LIMIT = 5;
+let cachedBalances = null;
 
 module.exports = {
   upsertBalances: async function (contractTxId, sortKey, state) {
-    const balances = state.balances;
+    let balances = state.balances;
+    let removedBalances = [];
     const ticker = state.ticker; // pst standard
     const symbol = state.symbol; // warp nft/erc standard
     if (!balances || (!ticker && !symbol)) {
@@ -14,6 +16,15 @@ module.exports = {
     }
     const token_ticker = ticker ? ticker.trim() : symbol.trim();
     const name = state.name;
+
+    if (Object.keys(cachedBalances).length > 0) {
+      const { diffed, removed } = diffBalances(cachedBalances, balances);
+      cachedBalances = balances;
+      balances = diffed;
+      removedBalances = removed;
+    } else {
+      cachedBalances = balances;
+    }
 
     const walletAddresses = Object.keys(balances);
     for (const walletAddress of walletAddresses) {
@@ -26,6 +37,10 @@ module.exports = {
                                                                        balance = excluded.balance`,
         [walletAddress.trim(), contractTxId.trim(), token_ticker, sortKey, name?.trim(), balance]
       );
+    }
+
+    for (const walletAddress of removedBalances) {
+      await drePool.query(`DELETE FROM dre.balances WHERE wallet_address = ?;`, [walletAddress.trim()]);
     }
   },
 
@@ -93,3 +108,23 @@ module.exports = {
     );
   }
 };
+
+function diffBalances(obj1, obj2) {
+  const diffed = {};
+  const keys2 = Object.keys(obj2);
+  const keys1 = new Set(Object.keys(obj1));
+
+  for (const key of keys2) {
+    if (obj1[key] !== obj2[key]) {
+      diffed[key] = obj2[key];
+    }
+    keys1.delete(key);
+  }
+
+  const removed = [];
+  for (const key of keys1) {
+    removed.push(key);
+  }
+
+  return { diffed, removed };
+}
