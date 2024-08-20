@@ -17,7 +17,7 @@ module.exports = {
     const token_ticker = ticker ? ticker.trim() : symbol.trim();
     const name = state.name;
 
-    if (Object.keys(cachedBalances).length > 0) {
+    if (cachedBalances) {
       const { diffed, removed } = diffBalances(cachedBalances, balances);
       console.log(`Diffed balances: ${JSON.stringify(diffed)}`);
       console.log(`Removed balances: ${JSON.stringify(removed)}`);
@@ -42,6 +42,7 @@ module.exports = {
       );
     }
 
+    console.log(`Wallet addresses to be removed from balances: ${removedBalances.length}`);
     for (const walletAddress of removedBalances) {
       await drePool.query(`DELETE FROM dre.balances WHERE wallet_address = ?;`, [walletAddress.trim()]);
     }
@@ -124,10 +125,5 @@ function diffBalances(obj1, obj2) {
     keys1.delete(key);
   }
 
-  const removed = [];
-  for (const key of keys1) {
-    removed.push(key);
-  }
-
-  return { diffed, removed };
+  return { diffed, removed: keys1 };
 }
