@@ -19,6 +19,8 @@ module.exports = {
 
     if (Object.keys(cachedBalances).length > 0) {
       const { diffed, removed } = diffBalances(cachedBalances, balances);
+      console.log(`Diffed balances: ${JSON.stringify(diffed)}`);
+      console.log(`Removed balances: ${JSON.stringify(removed)}`);
       cachedBalances = balances;
       balances = diffed;
       removedBalances = removed;
@@ -27,6 +29,7 @@ module.exports = {
     }
 
     const walletAddresses = Object.keys(balances);
+    console.log(`Wallet addresses to update balances: ${walletAddresses.length}`);
     for (const walletAddress of walletAddresses) {
       const balance = balances[walletAddress] ? balances[walletAddress].toString() : null;
       await drePool.query(
