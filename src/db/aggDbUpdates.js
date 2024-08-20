@@ -19,8 +19,6 @@ module.exports = {
 
     if (cachedBalances) {
       const { diffed, removed } = diffBalances(cachedBalances, balances);
-      console.log(`Diffed balances: ${JSON.stringify(diffed)}`);
-      console.log(`Removed balances: ${JSON.stringify(removed)}`);
       cachedBalances = balances;
       balances = diffed;
       removedBalances = removed;

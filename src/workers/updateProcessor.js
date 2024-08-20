@@ -52,9 +52,9 @@ module.exports = async (job) => {
     let result;
 
     // note: this check will work properly with at most 1 update processor per given contract...
-    logger.info("Cached state?: ", cachedState != null);
+    logger.info('Cached state?: ', cachedState != null);
     if (lastCachedKey && lastCachedKey === interaction.lastSortKey) {
-      logger.info("Using cached state!");
+      logger.info('Using cached state!');
       result = await contract.readStateFor(lastCachedKey, [interaction], undefined, cachedState);
     } else {
       result = await contract.readState(interaction.sortKey);
@@ -67,7 +67,8 @@ module.exports = async (job) => {
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
 
     checkStateSize(result.cachedValue.state);
-    if (!isTest) {
+    const interactionExcluded = getExcludedInteraction(interaction);
+    if (!isTest && !interactionExcluded) {
       await postEvalQueue.add(
         'sign',
         { contractTxId, result, interactions: [interaction], requiresPublish: true },
@@ -88,4 +89,26 @@ async function interactionCompleteHandler(event) {
   const eventData = event.detail;
   logger.debug('New contract event', eventData);
   await insertContractEvent(eventData);
+}
+
+function getExcludedInteraction(interaction) {
+  const input = interaction?.tags?.find((t) => t.name == 'Input')?.value;
+  if (!input) {
+    logger.info(`Could not get input tag, ${JSON.stringify(interaction)}`);
+    return false;
+  }
+  let parsedInput;
+  try {
+    parsedInput = JSON.parse(input);
+  } catch (e) {
+    logger.warn(`Could not parse input value. ${JSON.stringify(e)}. `);
+    return false;
+  }
+
+  const interactionName = parsedInput?.function;
+  if (interactionName == 'addPointsWithCap' && !parsedInput?.cap) {
+    return true;
+  }
+
+  return false;
 }
