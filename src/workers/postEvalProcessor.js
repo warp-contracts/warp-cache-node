@@ -20,23 +20,36 @@ module.exports = async (job) => {
     const contractState = result.cachedValue.state;
 
     if (tags && tags.length > 0) {
+      console.time('onContractDeployment');
       await onContractDeployment(contractTxId, tags);
+      console.timeEnd('onContractDeployment');
     }
+    console.time('signState');
     const signed = config.signState
       ? await sign(contractTxId, result.sortKey, contractState)
       : { stateHash: '', sig: '' };
+    console.timeEnd('signState');
+    console.time('onNewState');
     await onNewState(job.data);
+    console.timeEnd('onNewState');
 
     if (interactions) {
+      console.time('onNewInteraction');
       for (const interaction of interactions) {
         await onNewInteraction(contractTxId, interaction);
       }
+      console.timeEnd('onNewInteraction');
     }
 
     if (requiresPublish && !isTestInstance) {
+      console.time('publish');
       await publish(logger, contractTxId, contractState, result.sortKey, signed.stateHash, signed.sig);
+      console.timeEnd('publish');
+
       if (interactions && interactions.length > 0) {
+        console.time('publishInternalWritesContracts');
         await publishInternalWritesContracts(interactions);
+        console.timeEnd('publishInternalWritesContracts');
       }
     }
   } catch (e) {
