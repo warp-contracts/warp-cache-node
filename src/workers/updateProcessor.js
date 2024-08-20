@@ -68,6 +68,7 @@ module.exports = async (job) => {
 
     checkStateSize(result.cachedValue.state);
     const interactionExcluded = getExcludedInteraction(interaction);
+    logger.info(`Should exclude from postEval: ${interactionExcluded}`);
     if (!isTest && !interactionExcluded) {
       await postEvalQueue.add(
         'sign',

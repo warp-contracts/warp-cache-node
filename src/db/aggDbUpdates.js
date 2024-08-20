@@ -40,7 +40,7 @@ module.exports = {
       );
     }
 
-    console.log(`Wallet addresses to be removed from balances: ${removedBalances.length}`);
+    console.log(`Wallet addresses to be removed from balances: ${removedBalances.length || 0}`);
     for (const walletAddress of removedBalances) {
       await drePool.query(`DELETE FROM dre.balances WHERE wallet_address = ?;`, [walletAddress.trim()]);
     }
