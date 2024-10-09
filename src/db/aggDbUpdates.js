@@ -114,6 +114,7 @@ module.exports = {
 //obj1 - cached, obj2 = balances
 function diffBalances(obj1, obj2) {
   const diffed = {};
+  console.log('initial diffed', JSON.stringify(diffed));
   const keys2 = Object.keys(obj2);
   const keys1 = Object.keys(obj1);
   console.log('initial balances length', keys2.length);
@@ -137,10 +138,13 @@ function diffBalances(obj1, obj2) {
   );
 
   for (const key of keys2) {
-    if (obj1[key] !== obj2[key]) {
+    if (obj1[key].toLowerCase() !== obj2[key].toLowerCase()) {
       diffed[key] = obj2[key];
     }
-    keys1.splice(keys1.indexOf(key), 1);
+    const index = keys1.indexOf(key);
+    if (index !== -1) {
+      keys1.splice(index, 1);
+    }
   }
 
   console.log('cached length after diff', keys1.length);
