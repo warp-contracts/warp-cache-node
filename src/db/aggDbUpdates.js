@@ -35,7 +35,7 @@ module.exports = {
             INSERT INTO dre.balances(wallet_address, contract_tx_id, token_ticker, sort_key, token_name, balance)
             VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT (wallet_address, contract_tx_id) DO UPDATE SET sort_key = excluded.sort_key,
-                                                                       balance = excluded.balance`,
+                                                                       balance = excluded.balance;`,
         [walletAddress.trim(), contractTxId.trim(), token_ticker, sortKey, name?.trim(), balance]
       );
     }
@@ -111,17 +111,41 @@ module.exports = {
   }
 };
 
+//obj1 - cached, obj2 = balances
 function diffBalances(obj1, obj2) {
   const diffed = {};
   const keys2 = Object.keys(obj2);
-  const keys1 = new Set(Object.keys(obj1));
+  const keys1 = Object.keys(obj1);
+  console.log('initial balances length', keys2.length);
+  console.log('initial cached balances length', keys1.length);
+
+  console.log(
+    'balances contains 0c',
+    keys2.find((k) => k == '0x825999DB01C9D7b9A96411FfAd24a6Db6e11dC0c')
+  );
+  console.log(
+    'balances contains 743',
+    keys2.find((k) => k == '0x50Ff383E6b308069fD525B0ABa1474d9fe086743')
+  );
+  console.log(
+    'cached balances contains 0c',
+    keys1.find((k) => k == '0x825999DB01C9D7b9A96411FfAd24a6Db6e11dC0c')
+  );
+  console.log(
+    'cached balances contains 743',
+    keys1.find((k) => k == '0x50Ff383E6b308069fD525B0ABa1474d9fe086743')
+  );
 
   for (const key of keys2) {
     if (obj1[key] !== obj2[key]) {
       diffed[key] = obj2[key];
     }
-    keys1.delete(key);
+    keys1.splice(keys1.indexOf(key), 1);
   }
+
+  console.log('cached length after diff', keys1.length);
+  console.log('deleted', JSON.stringify(keys1));
+  console.log('diffed', JSON.stringify(diffed));
 
   return { diffed, removed: keys1 };
 }
