@@ -44,7 +44,7 @@ module.exports = {
     for (const walletAddress of removedBalances) {
       console.log('wallet address to be removed', walletAddress.trim());
       console.log('wallet address to be removed', typeof walletAddress);
-      await drePool.query(`delete from dre.balances where wallet_address = ?;`, [walletAddress.trim()]);
+      await drePool.query(`delete from dre.balances where wallet_address ilike $1;`, [walletAddress.trim()]);
     }
   },
 
