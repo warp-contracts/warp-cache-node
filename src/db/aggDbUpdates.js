@@ -19,11 +19,11 @@ module.exports = {
 
     if (cachedBalances) {
       const { diffed, removed } = diffBalances(cachedBalances, balances);
-      cachedBalances = balances;
-      balances = diffed;
+      cachedBalances = { ...balances };
+      balances = { ...diffed };
       removedBalances = removed;
     } else {
-      cachedBalances = balances;
+      cachedBalances = { ...balances };
     }
 
     const walletAddresses = Object.keys(balances);
