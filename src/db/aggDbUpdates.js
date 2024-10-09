@@ -42,7 +42,9 @@ module.exports = {
 
     console.log(`Wallet addresses to be removed from balances: ${removedBalances.length || 0}`);
     for (const walletAddress of removedBalances) {
-      await drePool.query(`DELETE FROM dre.balances WHERE wallet_address = ?;`, [walletAddress.trim()]);
+      console.log('wallet address to be removed', walletAddress.trim());
+      console.log('wallet address to be removed', typeof walletAddress);
+      await drePool.query(`delete from dre.balances where wallet_address = ?;`, [walletAddress.trim()]);
     }
   },
 
@@ -122,19 +124,19 @@ function diffBalances(obj1, obj2) {
 
   console.log(
     'balances contains 0c',
-    keys2.find((k) => k == '0x825999DB01C9D7b9A96411FfAd24a6Db6e11dC0c')
+    keys2.find((k) => k === '0x825999DB01C9D7b9A96411FfAd24a6Db6e11dC0c')
   );
   console.log(
     'balances contains 743',
-    keys2.find((k) => k == '0x50Ff383E6b308069fD525B0ABa1474d9fe086743')
+    keys2.find((k) => k === '0x50Ff383E6b308069fD525B0ABa1474d9fe086743')
   );
   console.log(
     'cached balances contains 0c',
-    keys1.find((k) => k == '0x825999DB01C9D7b9A96411FfAd24a6Db6e11dC0c')
+    keys1.find((k) => k === '0x825999DB01C9D7b9A96411FfAd24a6Db6e11dC0c')
   );
   console.log(
     'cached balances contains 743',
-    keys1.find((k) => k == '0x50Ff383E6b308069fD525B0ABa1474d9fe086743')
+    keys1.find((k) => k === '0x50Ff383E6b308069fD525B0ABa1474d9fe086743')
   );
 
   for (const key of keys2) {
