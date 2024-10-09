@@ -138,7 +138,7 @@ function diffBalances(obj1, obj2) {
   );
 
   for (const key of keys2) {
-    if (obj1[key].toLowerCase() !== obj2[key].toLowerCase()) {
+    if (obj1[key] !== obj2[key]) {
       diffed[key] = obj2[key];
     }
     const index = keys1.indexOf(key);
