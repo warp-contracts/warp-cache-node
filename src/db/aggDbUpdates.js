@@ -3,6 +3,7 @@ const { drePool } = require('./nodeDb');
 
 const TAGS_LIMIT = 5;
 let cachedBalances = null;
+const chunkSize = 10000;
 
 module.exports = {
   upsertBalances: async function (contractTxId, sortKey, state) {
@@ -28,18 +29,31 @@ module.exports = {
 
     const walletAddresses = Object.keys(balances);
     console.log(`Wallet addresses to update balances: ${walletAddresses.length}`);
-    for (const walletAddress of walletAddresses) {
-      const balance = balances[walletAddress] ? balances[walletAddress].toString() : null;
-      await drePool.query(
-        `
-            INSERT INTO dre.balances(wallet_address, contract_tx_id, token_ticker, sort_key, token_name, balance)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            ON CONFLICT (wallet_address, contract_tx_id) DO UPDATE SET sort_key = excluded.sort_key,
-                                                                       balance = excluded.balance;`,
-        [walletAddress.trim(), contractTxId.trim(), token_ticker, sortKey, name?.trim(), balance]
-      );
-    }
 
+    for (let i = 0; i < walletAddresses.length; i += chunkSize) {
+      const chunk = walletAddresses.slice(i, i + chunkSize);
+      const values = [];
+      const placeholders = [];
+      let counter = 1;
+
+      for (const walletAddress of chunk) {
+        const balance = balances[walletAddress] ? balances[walletAddress].toString() : null;
+        values.push(walletAddress.trim(), contractTxId.trim(), token_ticker, sortKey, name?.trim(), balance);
+        placeholders.push(`($${counter++}, $${counter++}, $${counter++}, $${counter++}, $${counter++}, $${counter++})`);
+      }
+
+      if (placeholders.length > 0) {
+        await drePool.query(
+          `
+            INSERT INTO dre.balances(wallet_address, contract_tx_id, token_ticker, sort_key, token_name, balance)
+            VALUES ${placeholders.join(',')}
+            ON CONFLICT (wallet_address, contract_tx_id) DO UPDATE SET sort_key = excluded.sort_key,
+                                                                       balance = excluded.balance;
+          `,
+          values
+        );
+      }
+    }
     console.log(`Wallet addresses to be removed from balances: ${removedBalances.length || 0}`);
     for (const walletAddress of removedBalances) {
       await drePool.query(`delete from dre.balances where wallet_address ilike $1;`, [walletAddress.trim()]);
