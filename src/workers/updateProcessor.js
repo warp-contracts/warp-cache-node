@@ -20,6 +20,7 @@ const logger = LoggerFactory.INST.create('updateProcessor');
 
 let cachedState = null;
 
+let interactionCompleteHandlerWrapper;
 module.exports = async (job) => {
   try {
     let { contractTxId, isTest, interaction } = job.data;
@@ -45,8 +46,10 @@ module.exports = async (job) => {
     });
 
     if (config.availableFunctions.contractEvents) {
-      logger.info('Adding interactionCompleted listener');
-      warp.eventTarget.addEventListener('interactionCompleted', interactionCompleteHandler);
+      logger.info('Adding interactionCompleted listener', interaction.id);
+      interactionCompleteHandlerWrapper = (event) =>
+        interactionCompleteHandler(event, isTest, interaction, contractTxId);
+      warp.eventTarget.addEventListener('interactionCompleted', interactionCompleteHandlerWrapper);
     }
 
     let result;
@@ -67,28 +70,27 @@ module.exports = async (job) => {
     logger.info(`Evaluated ${contractTxId} @ ${result.sortKey}`, contract.lastReadStateStats());
 
     checkStateSize(result.cachedValue.state);
-    const interactionExcluded = getExcludedInteraction(interaction);
-    logger.info(`Should exclude from postEval: ${interactionExcluded}`);
-    if (!isTest && !interactionExcluded) {
-      await postEvalQueue.add(
-        'sign',
-        { contractTxId, result, interactions: [interaction], requiresPublish: true },
-        { priority: 1 }
-      );
-    }
   } catch (e) {
     logger.error(e);
     throw e;
-  } finally {
-    if (config.availableFunctions.contractEvents) {
-      warp.eventTarget.removeEventListener('interactionCompleted', interactionCompleteHandler);
-    }
   }
 };
 
-async function interactionCompleteHandler(event) {
+async function interactionCompleteHandler(event, isTest, interaction, contractTxId) {
+  warp.eventTarget.removeEventListener('interactionCompleted', interactionCompleteHandlerWrapper);
+
   const eventData = event.detail;
   logger.debug('New contract event', eventData);
+  const interactionExcluded = getExcludedInteraction(interaction);
+  logger.info(`Should exclude from postEval: ${interactionExcluded}`);
+  if (!interactionExcluded && !isTest) {
+    await postEvalQueue.add(
+      'sign',
+      // result set to null as for Warpy state is neither signed nor published
+      { contractTxId, result: null, event: eventData, interactions: [interaction], requiresPublish: true },
+      { priority: 1 }
+    );
+  }
   await insertContractEvent(eventData);
 }
 
