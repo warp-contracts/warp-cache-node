@@ -6,6 +6,7 @@ const { upsertDeployment } = require('../db/aggDbUpdates');
 const { config } = require('../config');
 const { onNewState } = require('../routes/agg/onState');
 const { onNewInteraction } = require('../routes/agg/onInteraction');
+const { upsertBalances, changeWallet } = require('../db/aggDbUpdates');
 
 LoggerFactory.INST.logLevel('info', 'setStatePostProcessor');
 LoggerFactory.INST.logLevel('info', 'PgContractCache');
@@ -14,18 +15,28 @@ const logger = LoggerFactory.INST.create('setStatePostProcessor');
 const isTestInstance = config.env === 'test';
 
 module.exports = async (job) => {
-  const { contractTxId, tags, result, interactions, requiresPublish } = job.data;
+  const { contractTxId, tags, result, event, interactions, requiresPublish } = job.data;
   try {
     logger.info('PostEval Processor', contractTxId);
-    const contractState = result.cachedValue.state;
+    const contractState = result?.cachedValue?.state;
 
     if (tags && tags.length > 0) {
       await onContractDeployment(contractTxId, tags);
     }
     const signed = config.signState
-      ? await sign(contractTxId, result.sortKey, contractState)
+      ? await sign(contractTxId, result?.sortKey, contractState)
       : { stateHash: '', sig: '' };
-    await onNewState(job.data);
+
+    if (event) {
+      const { data } = event;
+      if (data?.name == 'upsertBalance') {
+        console.time('upsertBalances');
+        await upsertBalances(event);
+        console.timeEnd('upsertBalances');
+      } else if (data?.name == 'changeWallet') {
+        await changeWallet(event);
+      }
+    }
 
     if (interactions) {
       for (const interaction of interactions) {
@@ -34,7 +45,7 @@ module.exports = async (job) => {
     }
 
     if (requiresPublish && !isTestInstance) {
-      await publish(logger, contractTxId, contractState, result.sortKey, signed.stateHash, signed.sig);
+      await publish(logger, contractTxId, contractState, result?.sortKey, signed.stateHash, signed.sig);
 
       if (interactions && interactions.length > 0) {
         await publishInternalWritesContracts(interactions);

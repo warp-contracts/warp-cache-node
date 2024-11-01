@@ -2,32 +2,15 @@ const logger = require('./../logger')('aggUpdates');
 const { drePool } = require('./nodeDb');
 
 const TAGS_LIMIT = 5;
-let cachedBalances = null;
 const chunkSize = 10000;
+const ticker = 'REDSTONE_TICKER';
+const tokenName = 'RedStone PST';
 
 module.exports = {
-  upsertBalances: async function (contractTxId, sortKey, state) {
-    let balances = state.balances;
-    let removedBalances = [];
-    const ticker = state.ticker; // pst standard
-    const symbol = state.symbol; // warp nft/erc standard
-    if (!balances || (!ticker && !symbol)) {
-      logger.error(`Contract ${contractTxId} is not compatible with token standard`);
-      return;
-    }
-    const token_ticker = ticker ? ticker.trim() : symbol.trim();
-    const name = state.name;
+  upsertBalances: async function (event) {
+    const { contractTxId, sortKey, data } = event;
 
-    if (cachedBalances) {
-      const { diffed, removed } = diffBalances(cachedBalances, balances);
-      cachedBalances = { ...balances };
-      balances = { ...diffed };
-      removedBalances = removed;
-    } else {
-      cachedBalances = { ...balances };
-    }
-
-    const walletAddresses = Object.keys(balances);
+    const walletAddresses = data.users.map((u) => u.address);
     console.log(`Wallet addresses to update balances: ${walletAddresses.length}`);
 
     for (let i = 0; i < walletAddresses.length; i += chunkSize) {
@@ -37,8 +20,8 @@ module.exports = {
       let counter = 1;
 
       for (const walletAddress of chunk) {
-        const balance = balances[walletAddress] ? balances[walletAddress].toString() : null;
-        values.push(walletAddress.trim(), contractTxId.trim(), token_ticker, sortKey, name?.trim(), balance);
+        const balance = data.users.find((u) => u.address == walletAddress)?.balance?.toString() || null;
+        values.push(walletAddress.trim(), contractTxId.trim(), ticker, sortKey, tokenName, balance);
         placeholders.push(`($${counter++}, $${counter++}, $${counter++}, $${counter++}, $${counter++}, $${counter++})`);
       }
 
@@ -54,10 +37,16 @@ module.exports = {
         );
       }
     }
-    console.log(`Wallet addresses to be removed from balances: ${removedBalances.length || 0}`);
-    for (const walletAddress of removedBalances) {
-      await drePool.query(`delete from dre.balances where wallet_address ilike $1;`, [walletAddress.trim()]);
-    }
+  },
+
+  changeWallet: async function (event) {
+    const { data } = event;
+
+    console.log(`Changing wallet address: ${data.oldAddress} to: ${data.address}.`);
+    await drePool.query(`update dre.balances set wallet_address = $1 where wallet_address ilike $2;`, [
+      data.address.trim(),
+      data.oldAddress.trim()
+    ]);
   },
 
   upsertDeployment: async function (contractTxId, indexes) {
