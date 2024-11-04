@@ -47,7 +47,7 @@
     "node-nlp": "^4.24.0",
     "pg": "^8.11.2",
     "safe-stable-stringify": "^2.4.3",
-    "warp-contracts": "1.4.45-warpy.0",
+    "warp-contracts": "1.4.45-warpy.1",
     "warp-contracts-evaluation-progress-plugin": "1.0.17",
     "warp-contracts-lmdb": "1.1.10",
     "warp-contracts-plugin-blacklist": "1.0.0",

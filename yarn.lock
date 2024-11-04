@@ -7089,10 +7089,10 @@ warp-contracts-sqlite@1.0.2:
     better-sqlite3 "^8.3.0"
     safe-stable-stringify "^2.4.3"
 
-warp-contracts@1.4.45-warpy.0:
-  version "1.4.45-warpy.0"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.45-warpy.0.tgz#5d477c9773c880e3b1e894a77b7d1ddd3eca21ae"
-  integrity sha512-h006lXH7/co2NLdJHq9aUYnSfvJLSMnulr+xqojHyv7n/j/H/aFymTWBN0uGmu9AeKRQvNXkyHBtm+CvEwxjxg==
+warp-contracts@1.4.45-warpy.1:
+  version "1.4.45-warpy.1"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.45-warpy.1.tgz#29497a7204f13d9f167895859457a7c82f6f47ea"
+  integrity sha512-HZhm4MDOM00+GzsLTrL7NNcnKXITZCfHH0CW1YjQG5rs45Hk3XzJZeiwhaZcwnOHG6+dUtW9UKlN6vv/XpJHmQ==
   dependencies:
     archiver "^5.3.0"
     arweave "1.14.4"
@@ -7106,6 +7106,7 @@ warp-contracts@1.4.45-warpy.0:
     stream-buffers "^3.0.2"
     unzipit "^1.4.0"
     warp-arbundles "^1.0.4"
+    warp-contracts "^1.4.45"
     warp-isomorphic "^1.0.7"
     warp-wasm-metering "1.0.1"
 
@@ -7116,6 +7117,26 @@ warp-contracts@^1.0.0:
   dependencies:
     archiver "^5.3.0"
     arweave "1.13.7"
+    async-mutex "^0.4.0"
+    bignumber.js "9.1.1"
+    events "3.3.0"
+    fast-copy "^3.0.0"
+    level "^8.0.0"
+    memory-level "^1.0.0"
+    safe-stable-stringify "2.4.1"
+    stream-buffers "^3.0.2"
+    unzipit "^1.4.0"
+    warp-arbundles "^1.0.4"
+    warp-isomorphic "^1.0.7"
+    warp-wasm-metering "1.0.1"
+
+warp-contracts@^1.4.45:
+  version "1.4.45"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.4.45.tgz#918ede8cdc272bb6c0e9d9334a31107071b8b894"
+  integrity sha512-v4asbKIofCmQjH+1Q+yTyJmGUFwaL11zNnfaipRsxQ488MB7lGfQGNeadMfYhhc2yvUDhcVok1UcSfvfgugPaQ==
+  dependencies:
+    archiver "^5.3.0"
+    arweave "1.14.4"
     async-mutex "^0.4.0"
     bignumber.js "9.1.1"
     events "3.3.0"

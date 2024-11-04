@@ -45,13 +45,6 @@ module.exports = async (job) => {
       lastSortKey: interaction.lastSortKey
     });
 
-    if (config.availableFunctions.contractEvents) {
-      logger.info('Adding interactionCompleted listener', interaction.id);
-      interactionCompleteHandlerWrapper = (event) =>
-        interactionCompleteHandler(event, isTest, interaction, contractTxId);
-      warp.eventTarget.addEventListener('interactionCompleted', interactionCompleteHandlerWrapper);
-    }
-
     let result;
 
     // note: this check will work properly with at most 1 update processor per given contract...
@@ -61,6 +54,12 @@ module.exports = async (job) => {
       result = await contract.readStateFor(lastCachedKey, [interaction], undefined, cachedState);
     } else {
       result = await contract.readState(interaction.sortKey);
+    }
+
+    if (config.availableFunctions.contractEvents) {
+      for (let event of result.cachedValue.events) {
+        await handleEvent(event, isTest, interaction);
+      }
     }
 
     cachedState = result;
@@ -76,22 +75,19 @@ module.exports = async (job) => {
   }
 };
 
-async function interactionCompleteHandler(event, isTest, interaction, contractTxId) {
-  warp.eventTarget.removeEventListener('interactionCompleted', interactionCompleteHandlerWrapper);
-
-  const eventData = event.detail;
-  logger.debug('New contract event', eventData);
+async function handleEvent(event, isTest, interaction) {
+  logger.debug('New contract event', event);
   const interactionExcluded = getExcludedInteraction(interaction);
   logger.info(`Should exclude from postEval: ${interactionExcluded}`);
   if (!interactionExcluded && !isTest) {
     await postEvalQueue.add(
       'sign',
       // result set to null as for Warpy state is neither signed nor published
-      { contractTxId, result: null, event: eventData, interactions: [interaction], requiresPublish: true },
+      { contractTxId: event.contractTxId, result: null, event, interactions: [interaction], requiresPublish: true },
       { priority: 1 }
     );
   }
-  await insertContractEvent(eventData);
+  await insertContractEvent(event);
 }
 
 function getExcludedInteraction(interaction) {
