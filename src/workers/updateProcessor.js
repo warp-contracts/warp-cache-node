@@ -77,21 +77,25 @@ module.exports = async (job) => {
 };
 
 async function interactionCompleteHandler(event, isTest, interaction, contractTxId) {
-  warp.eventTarget.removeEventListener('interactionCompleted', interactionCompleteHandlerWrapper);
+  try {
+    warp.eventTarget.removeEventListener('interactionCompleted', interactionCompleteHandlerWrapper);
 
-  const eventData = event.detail;
-  logger.debug('New contract event', eventData);
-  const interactionExcluded = getExcludedInteraction(interaction);
-  logger.info(`Should exclude from postEval: ${interactionExcluded}`);
-  if (!interactionExcluded && !isTest) {
-    await postEvalQueue.add(
-      'sign',
-      // result set to null as for Warpy state is neither signed nor published
-      { contractTxId, result: null, event: eventData, interactions: [interaction], requiresPublish: true },
-      { priority: 1 }
-    );
+    const eventData = event.detail;
+    logger.info('New contract event', eventData);
+    const interactionExcluded = getExcludedInteraction(interaction);
+    logger.info(`Should exclude from postEval: ${interactionExcluded}`);
+    if (!interactionExcluded && !isTest) {
+      await postEvalQueue.add(
+        'sign',
+        // result set to null as for Warpy state is neither signed nor published
+        { contractTxId, result: null, event: eventData, interactions: [interaction], requiresPublish: true },
+        { priority: 1 }
+      );
+    }
+    await insertContractEvent(eventData);
+  } catch (e) {
+    logger.error(e);
   }
-  await insertContractEvent(eventData);
 }
 
 function getExcludedInteraction(interaction) {
