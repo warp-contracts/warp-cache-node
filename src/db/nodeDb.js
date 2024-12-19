@@ -371,6 +371,18 @@ module.exports = {
     return result.rows;
   },
 
+  getRoulettePick: async (interactionId) => {
+    const result = await dreReplicaPool.query(
+      `
+        select data ->> 'points' 
+        from dre.contract_event 
+        where (data ->> 'roulette')::boolean = true and data ->> 'interactionId' = $2;
+      `,
+      [interactionId]
+    );
+    return result.rows;
+  },
+
   getWarpySeasonRanking: async (limit, address, contractId, from) => {
     const result = await dreReplicaPool.query(
       `

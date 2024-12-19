@@ -20,7 +20,6 @@ const logger = LoggerFactory.INST.create('updateProcessor');
 
 let cachedState = null;
 
-let interactionCompleteHandlerWrapper;
 module.exports = async (job) => {
   try {
     let { contractTxId, isTest, interaction } = job.data;
