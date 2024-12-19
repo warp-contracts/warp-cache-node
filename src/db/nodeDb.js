@@ -376,7 +376,7 @@ module.exports = {
       `
         select data ->> 'points' 
         from dre.contract_event 
-        where (data ->> 'roulette')::boolean = true and data ->> 'interactionId' = $2;
+        where (data ->> 'roulette')::boolean = true and data ->> 'interactionId' = $1;
       `,
       [interactionId]
     );
