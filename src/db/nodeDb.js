@@ -374,7 +374,7 @@ module.exports = {
   getRoulettePick: async (interactionId) => {
     const result = await dreReplicaPool.query(
       `
-        select data ->> 'points' 
+        select data ->> 'points' as pick
         from dre.contract_event 
         where (data ->> 'roulette')::boolean = true and data ->> 'interactionId' = $1;
       `,
