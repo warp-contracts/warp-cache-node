@@ -16,10 +16,15 @@ module.exports = {
 
     try {
       const result = await getRoulettePick(interactionId);
-      ctx.body = {
-        result
-      };
-      ctx.status = 200;
+      if (result.length) {
+        ctx.body = {
+          result
+        };
+        ctx.status = 200;
+      } else {
+        ctx.body = `No pick found for indicated interaction id.`;
+        ctx.status = 404;
+      }
     } catch (e) {
       ctx.body = e.message;
       ctx.status = 500;
