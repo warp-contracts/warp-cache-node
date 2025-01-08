@@ -1,4 +1,4 @@
-const { getWarpySeasonsUserSummary } = require('../../db/nodeDb');
+const { getWarpySeasonsSummaryUserActivity, getWarpySeasonsSummaryUserHistory } = require('../../db/nodeDb');
 const { config } = require('../../config');
 
 module.exports = {
@@ -16,8 +16,12 @@ module.exports = {
     }
 
     try {
-      const result = await getWarpySeasonsUserSummary(id);
-      ctx.body = result;
+      const activity = await getWarpySeasonsSummaryUserActivity(id);
+      const history = await getWarpySeasonsSummaryUserHistory(id);
+      ctx.body = {
+        ...activity,
+        ...history
+      };
       ctx.status = 200;
     } catch (e) {
       ctx.body = e.message;

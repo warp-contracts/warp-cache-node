@@ -608,7 +608,7 @@ module.exports = {
     return result.rows;
   },
 
-  getWarpySeasonsUserSummary: async (userId) => {
+  getWarpySeasonsSummaryUserActivity: async (userId) => {
     const result = await dreReplicaPool.query(
       `
           select * from dre.sum_user where user_id = $1;`,
@@ -616,5 +616,17 @@ module.exports = {
     );
 
     return result?.rows[0];
+  },
+
+  getWarpySeasonsSummaryUserHistory: async (userId) => {
+    const result = await dreReplicaPool.query(
+      `
+          select balance, season, season_points, season_points_multiplied, balance_enhanced 
+          from dre.sum_season_user 
+          where user_id = $1;`,
+      [userId]
+    );
+
+    return result?.rows;
   }
 };
