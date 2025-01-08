@@ -25,6 +25,7 @@ const { warpyUserBalance } = require('./routes/warpy/warpyUserBalance');
 const { warpyUserCounter } = require('./routes/warpy/warpyUserCounter');
 const { warpyUserRanking } = require('./routes/warpy/warpyUserRanking');
 const { warpySeasonsBoosts } = require('./routes/warpy/warpySeasonsBoosts');
+const { warpySeasonsSummary } = require('./routes/warpy/warpySeasonsSummary');
 
 const router = new Router();
 
@@ -53,6 +54,7 @@ router.get('/warpy/user-balance', warpyUserBalance);
 router.get('/warpy/user-counter', warpyUserCounter);
 router.get('/warpy/user-ranking', warpyUserRanking);
 router.get('/warpy/seasons-boosts', warpySeasonsBoosts);
+router.get('/warpy/seasons-summary', warpySeasonsSummary);
 router.delete('/contract/:id', eraseContract);
 
 module.exports = router;

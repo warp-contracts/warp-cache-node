@@ -606,5 +606,15 @@ module.exports = {
     );
 
     return result.rows;
+  },
+
+  getWarpySeasonsUserSummary: async (userId) => {
+    const result = await dreReplicaPool.query(
+      `
+          select * from dre.sum_user where user_id = $1;`,
+      [userId]
+    );
+
+    return result?.rows[0];
   }
 };
